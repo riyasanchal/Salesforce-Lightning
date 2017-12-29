@@ -1,0 +1,4 @@
+<!--c:ApplicationMassActionEvent-->
+<aura:event type="APPLICATION">    
+    <aura:attribute name="doAction" type="String"/>
+</aura:event>

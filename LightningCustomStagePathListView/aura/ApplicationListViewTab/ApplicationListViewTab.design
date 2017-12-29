@@ -1,0 +1,3 @@
+<design:component >
+    <design:attribute name="FieldSet" datasource="apex://ApplicationTabColumnFields" description="Select the field set to dispaly the columns"/>
+</design:component>

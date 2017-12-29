@@ -1,0 +1,24 @@
+<aura:component access="global" >
+	<!--internal attributes-->
+    
+    <aura:attribute name="stages" type="string[]"/>
+    <aura:attribute name="rejectedStage" type="string" default=""/>
+    <aura:attribute name="currentStage" type="string" default=""/>
+    <aura:attribute name="progressSteps" type="object[]"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    <div class="slds-grid">
+        <div class="slds-tabs--path slds-p-around--small" role="application tablist">
+            <ul class="slds-tabs--path__nav" role="presentation">
+                <aura:iteration items="{!v.progressSteps}" var="step">
+                    <li class="{!'slds-tabs--path__item slds-' + step.statusClass}" role="presentation">
+                        <a class="slds-tabs--path__link" tabindex="{!step.tabIndex}" role="tab" aria-live="assertive"  title="{!step.value}" onclick="javascript:void(0);">
+                            <lightning:icon iconName="utility:check" size="x-small" alternativeText="Stage Complete" class="slds-tabs--path__stage"/>
+                            <span class="slds-tabs--path__title" title="{!step.value}">{!step.label}</span>
+                        </a>
+                    </li>
+                </aura:iteration>            
+            </ul>        
+        </div>
+     </div>
+</aura:component>

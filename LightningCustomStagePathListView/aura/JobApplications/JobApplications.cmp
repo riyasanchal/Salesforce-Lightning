@@ -1,0 +1,7 @@
+<aura:component controller="JobApplicationsCtrl" implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" >
+	<aura:attribute name="myApplications" type="Job__c[]"/>
+    <ui:button label="Get Applications" press="{!c.getApplications}"/>
+    <aura:iteration items="{!v.myApplications}" var="obj">
+    	{!obj.Applicant__r.Name}
+	</aura:iteration>
+</aura:component>

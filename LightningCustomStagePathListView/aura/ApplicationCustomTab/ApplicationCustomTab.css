@@ -1,0 +1,46 @@
+.THIS .mass-action {    
+ 	margin-right: 1rem;
+}
+.THIS .mass-action .slds-button_icon {
+ 	width: 8rem;
+    color: rgb(0, 112, 210);
+}
+.THIS .mass-action .slds-button_icon .slds-icon-text-default {
+    fill: rgb(0, 112, 210);
+}
+
+.THIS .mass-action .slds-dropdown__list .slds-dropdown__item > a {
+	color: rgb(0, 112, 210);
+}    
+    
+.THIS .switchButton {
+    width: 9.063rem;
+	text-align: left;
+    padding-left: 0.3rem;
+	padding-right: 0rem;
+}
+.THIS .switchIcon {
+    display: inline-block;
+    position: relative;
+    width: 1rem;
+    height: .55rem;
+    border: 1px solid #0b6ebe;
+    padding: .125rem;
+    background-color: #0b6ebe;
+    border-radius: 7rem;
+}
+
+.THIS .switchIcon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 7px;
+    width: .45rem;
+    height: .45rem;
+    background-color: rgb(255, 255, 255);
+    border-radius: 15rem;
+}
+.THIS .switchText {
+    margin-left: 2px;
+    width: 6.875rem;
+}

@@ -1,0 +1,9 @@
+.THIS .slds-tabs--path__item + .slds-is-lost::before {
+    background-color: rgb(75, 202, 129);
+}
+.THIS .slds-tabs_path__item:hover+.slds-is-lost:before,.THIS .slds-tabs--path__item:hover+.slds-is-lost:before {
+ 	background-color:rgb(4, 132, 75);
+}
+.THIS .slds-is-lost + .slds-is-incomplete::before {
+ 	background-color: rgb(194, 57, 52);
+}

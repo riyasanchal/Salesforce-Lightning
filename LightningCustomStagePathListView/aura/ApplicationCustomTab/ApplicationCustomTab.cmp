@@ -1,0 +1,62 @@
+<aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" 
+                access="global" 
+                controller="ApplicationLightningTab">
+    
+    <!-- Event Handling -->
+    <aura:registerEvent name="applicationMassAction" type="c:ApplicationMassActionEvent"/>
+    
+    <!-- Design attributes -->
+    <aura:attribute name="FieldSet" type="string" default="Lightning_List_Tab" required="true"/>
+    
+    <!-- Component Attributes -->
+    <aura:attribute name="stages" type="String[]"/>
+    <aura:attribute name="isKanban" type="Boolean" default="false"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium slds-m-top_medium">
+      <div class="slds-text-heading_medium">
+      		<h2>Applications</h2>
+      </div>
+        <div>
+            
+            <div class="slds-dropdown-trigger mass-action">                
+              <button class="slds-button slds-button_icon slds-button_icon-border-filled" title="Mass Action" onclick="{!c.showActions}">
+                  Mass Action
+                  <lightning:icon iconName="utility:down" size="xx-small" alternativeText=""/>
+                <span class="slds-assistive-text">Mass Action</span>
+              </button>
+              <div aura:id="mActionMenu" class="slds-dropdown slds-dropdown_right  slds-hide">
+                <ul  class="slds-dropdown__list" role="menu">
+                  <aura:iteration items="{!v.stages}" var="stage">   
+                      <li class="slds-dropdown__item" role="presentation">
+                        <a href="javascript:void(0);" role="menuitem" tabindex="-1" data-action="{!stage}" onclick="{!c.doMassAction}">
+                          <span class="slds-truncate" title="{!'Move to '+stage}">{!'Move to '+stage}</span>
+                        </a>
+                      </li>
+                  </aura:iteration>
+                </ul>
+              </div>
+            </div>
+            
+             <div class="slds-dropdown-trigger"  >
+                 <a class="slds-button slds-button_neutral switchButton"  href="javascript:void(0)" onclick="{!c.changeView}">
+                     <span class="switchIcon"></span>
+                     <aura:if isTrue="{!!v.isKanban}">
+                         <span aura:id="switchText" class="switchText">Switch to: Kanban</span> 
+                         <aura:set attribute="else">
+                             <span aura:id="switchText" class="switchText">Switch to: List</span>
+                         </aura:set>
+                     </aura:if>
+                 </a>
+              </div> 
+         </div>
+      </div>
+    
+    <aura:if isTrue="{!v.isKanban}">
+          	<div class="slds-box">
+                <c:ApplicationKanbanView />
+            </div> 
+          <aura:set attribute="else">
+              <c:ApplicationListViewTab recordId="a0x1I000000SlZdQAK"/>
+          </aura:set>
+        </aura:if>
+</aura:component>

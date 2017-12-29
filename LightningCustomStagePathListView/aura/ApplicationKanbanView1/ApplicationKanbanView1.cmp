@@ -1,0 +1,51 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global" controller="ApplicationLightningTab">
+	<ltng:require styles="{!$Resource.JobApplicationManagerCSS}" />
+	<ltng:require styles="{!$Resource.KanbanSwimlaneCSS}" />
+    
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="stages" type="String[]"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <div class="slds set-view slds-scrollable">		
+        <table class="slds-m-top--small kanban-board" stryle="table-layout: auto; min-width: 1920px;" width="100%">
+            <thead>
+            	<tr>
+                	<th>
+                    	<table class="chevron" cellpadding="10px">                            
+                        	<tr>
+                            	<td>
+                                	<ui:inputCheckbox aura:id="cbox" class="cBox"/>
+                                </td>
+                           
+                            	<td>
+                                    Long List<br/>
+                                    --------------<br/>
+                                    Selections: 0
+                                </td>
+                            </tr>
+                        </table>
+                    </th>
+                    <aura:iteration var="stage" items="{!v.stages}">                        
+                    	<th>
+                            <table class="chevron">                            
+                                <tr>
+                                    <td>
+                                        <ui:inputCheckbox aura:id="cbox" class="cBox"/>
+                                    </td>
+                               
+                                    <td>
+                                        {!stage}<br/>
+                                        --------------<br/>
+                                        Selections: 0
+                                    </td>
+                                </tr>
+                            </table>
+                        </th>
+                    </aura:iteration>                    
+                </tr>
+            </thead>
+        </table>
+    </div>
+</aura:component>

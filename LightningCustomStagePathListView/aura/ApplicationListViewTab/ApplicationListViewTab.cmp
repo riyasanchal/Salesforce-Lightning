@@ -1,0 +1,90 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,force:lightningQuickAction" 
+                access="global" 
+                controller="ApplicationLightningTab">
+    
+    <aura:attribute name="sObjectName" type="String" default="V2_Application__c"/>
+    <aura:attribute name="fieldSetName" type="string" default="Lightning_List_Tab"/>
+    <aura:attribute name="fieldSetValues" type="List"/>
+    <aura:attribute name="tableRecords" type="List"/>
+    <aura:attribute name="parentFieldName" type="string" default="Job__c"/>
+    <aura:attribute name="parentRecordId" type="string"/>
+    <aura:attribute name="FieldSet" type="string" default="Lightning_List_Tab" required="true"/>
+	<aura:attribute name="stages" type="String[]"/>
+    <aura:attribute name="allStages" type="String[]"/>
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="filterField" type="string"/>
+    <aura:attribute name="filterValue" type="string"/>    
+    <aura:attribute name="listHasValue" type="string" default="True"/>
+    
+    <aura:handler event="c:ApplicationMassActionEvent" action="{!c.getAllApplicationId}"/>    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <div class="slds set-view slds-scrollable">		
+        <table class="slds-table slds-table--bordered" width="100%">
+            <thead>
+                <tr>
+                    <th class="slds-text-title_caps" width="20%">
+                    	<ui:inputCheckbox aura:id="cbox" class="cBox" change="{!c.selectAll}"/>
+                    </th>
+                    <aura:iteration items="{!v.fieldSetValues}" var="field">                        
+                        <aura:if isTrue="{!field.name != 'Stage__c'}"> 
+                            <th class="slds-text-title_caps" width="20%"> 
+                                {!field.label}
+                            </th>
+                        </aura:if>
+                        <aura:if isTrue="{!field.name == 'Stage__c'}"> 
+                            <th class="slds-text-title_caps" width="20%"> 
+                                {!field.label} &nbsp;
+               					<lightning:buttonMenu alternativeText="Stage" onselect="{!c.onSelectChange}" iconSize="xx-small">
+                                    <lightning:menuItem aura:id="stageMenuItems" label="ALL" value="ALL"/>
+                                    <aura:iteration var="stage" items="{!v.allStages}">
+                                        <lightning:menuItem aura:id="stageMenuItems" label="{!stage}" value="{!stage}"/>
+                                    </aura:iteration>
+                                </lightning:buttonMenu>
+                            </th>
+                        </aura:if>
+                    </aura:iteration>
+                    <th class="slds-text-title_caps" width="20%">
+                    	Action
+                    </th>
+                </tr>
+            </thead>
+        	<tbody>				
+                <aura:if isTrue="{!v.listHasValue == 'True'}">
+                    <aura:iteration items="{!v.tableRecords}" var="row">                    
+                        <tr>
+                            <td width="20%">
+                                <ui:inputCheckbox aura:id="cboxRow" text="{!row.Id}" class="cBox" change="{!c.changeSelectAll}"/>
+                            </td>
+                            <aura:iteration items="{!v.fieldSetValues}" var="field">                            
+                                <td class="slds-truncate" width="20%">
+                                    <aura:if isTrue="{!field.name != 'Stage__c'}">
+                                        <c:LightningCell record="{!row}" field="{!field}"/>
+                                    </aura:if>
+                                    <aura:if isTrue="{!field.name == 'Stage__c'}">                                    
+                                        <c:ApplicationStageProgress stages="{!v.stages}" currentStage="{!row.Stage__c}" rejectedStage="{!row.Rejected_Stage__c}"/>
+                                    </aura:if>
+                                </td>
+                            </aura:iteration>
+                            <td width="20%">
+                                
+                            </td>
+                        </tr>
+                    </aura:iteration>                    
+                </aura:if>
+                
+                <aura:if isTrue="{!v.listHasValue == 'False'}">
+                    <tr>
+                        <td colspan="6">
+                            <br/>
+                            <div class="slds-text-align--center">
+                                <ui:outputText class="slds-text-title_caps" value="No records to show"/>
+                            </div>  
+                            <br/>
+                        </td>
+                    </tr>
+                </aura:if>
+        	</tbody>
+        </table>
+    </div>
+</aura:component>

@@ -5,6 +5,10 @@
         var stages = component.get("v.stages");
         var currentStage = helper.getComponentValue(component.get("v.currentStage")); 
         var rejectedStage = helper.getComponentValue(component.get("v.rejectedStage"));      
+        
+        if(stages.indexOf(rejectedStage) == -1){  
+           rejectedStage = '';
+        }
         var isComplete = (rejectedStage != '' || currentStage != ''); 
         
         for (var key in stages) { 

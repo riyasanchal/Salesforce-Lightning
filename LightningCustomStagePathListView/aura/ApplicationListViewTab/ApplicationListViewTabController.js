@@ -32,5 +32,9 @@
     
     getAllApplicationId : function(component,event,helper) {
        helper.updateApplicationStages(component, event, helper);
-    }    
+    },
+    
+    rejectSelectedApplication:function(component,event, helper){
+		helper.rejectSelectedApplication(component, event, helper);
+    },
 })

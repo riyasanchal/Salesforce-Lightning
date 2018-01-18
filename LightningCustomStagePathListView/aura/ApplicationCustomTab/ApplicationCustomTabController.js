@@ -22,4 +22,10 @@
         actionEvent.fire();
         
     },
+    
+    rejectSelected : function(component, event, helper){
+        var actionEvent = $A.get("e.c:RejectSelectedRecordsEvent");
+        actionEvent.fire();
+        
+    },
 })

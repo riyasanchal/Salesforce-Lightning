@@ -1,3 +1,232 @@
-<aura:component>
-	
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global" controller="ApplicationLightningTab">
+	<ltng:require styles="{!$Resource.JobApplicationManagerCSS}" />
+	<ltng:require styles="{!$Resource.KanbanSwimlaneCSS}" />
+    <ltng:require styles="{!$Resource.FontAwesome + '/css/font-awesome.css'}"/>
+    
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="stages" type="String[]"/>
+    
+    <aura:attribute name="longListsObjectName" type="String" default="Opportunity_Discussed__c"/>
+    <aura:attribute name="longListfieldSetName" type="string" default="KanbanCardLineFieldSet"/>
+    
+    <aura:attribute name="applicationsObjectName" type="String" default="Application_V2__c"/>
+    <aura:attribute name="applicationfieldSetName" type="string" default="KanbanCardLineFieldSet"/>
+    
+    <aura:attribute name="longListfieldSetValues" type="List"/>
+    <aura:attribute name="longListtableRecords" type="List"/>
+    <aura:attribute name="applicationfieldSetValues" type="List"/>
+    <aura:attribute name="listOfApplicationRecordsByStage" type="object[]" default="[]" />
+    
+    <aura:attribute name="selectedFromLongList" type="integer" default="0"></aura:attribute>
+    <aura:attribute name="selectedFromApplication" type="integer" default="0"></aura:attribute>
+    <aura:attribute name="selectedFromApplicationByStage" type="object[]" default="[]" />
+    
+    <aura:attribute name="parentFieldName" type="string" default="Job__c"/>
+    
+    
+    <aura:attribute name="filterField" type="string"/>
+    <aura:attribute name="filterValue" type="string"/>    
+    <aura:attribute name="listHasValue" type="string" default="True"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:handler event="c:ApplicationMassActionEvent" action="{!c.getSelectedIds}"/>
+    <aura:handler event="c:RejectSelectedRecordsEvent" action="{!c.rejectSelectedApplication}"/>
+    
+    <div class="slds set-view slds-scrollable">		
+        <table class="slds-m-top--small kanban-board" style="table-layout: fixed; min-width:1500px" width="100%">
+            <thead>
+            	<tr>
+                	<th>
+                    	<table class="chevron" cellpadding="10px">  
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <ui:inputCheckbox aura:id="cbox" text="LongList" class="cBoxLongList" change="{!c.selectAll}"/>
+                                    </td>
+                               
+                                    <td class="chevron-label slds-text-align--center">
+                                        Long List&nbsp;(<span class="tooltip tooltipstered" >{!v.longListtableRecords.length}</span>)
+                                        <div class="selections">Selections: <span class="LongListCount">0</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </th>
+                    <aura:iteration var="stage" items="{!v.stages}">                        
+                    	<th>
+                            <table class="chevron">   
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <ui:inputCheckbox aura:id="cbox" text="{!stage}" class="{!'cBox' + stage}" change="{!c.selectAll}"/>
+                                        </td>
+                                   
+                                        <td class="chevron-label slds-text-align--center">
+                                            {!stage}&nbsp;(<span class="tooltip tooltipstered" >
+                                                <aura:iteration items="{!v.listOfApplicationRecordsByStage}" var="outside">
+                                                    <aura:if isTrue="{!outside.key == stage}">
+                                                        {!outside.list.length}
+                                                    </aura:if>
+                                                </aura:iteration>
+                                            </span>)
+                                            <div class="selections">Selections:
+                                                <span class="{!stage+'Count'}">0</span>	
+                                            </div>	 
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </th>
+                    </aura:iteration>                    
+                </tr>
+            </thead>
+            <tbody>        
+                <tr>
+                    <td>
+                        <div class="list-container slds-p-around--small">
+                            <ul class="jk_a list slds-scrollable--y ui-sortable">
+                            <!-- Start Itration -->
+                                <aura:if isTrue="{!v.longListtableRecords.length > 0}">
+                                    <aura:iteration items="{!v.longListtableRecords}" var="row">
+                                        <li  class="slds-item card card-state card_state_false">
+                                            <ul>
+                                                <li class="card-header card_state_false">
+                                                    <table>
+                                                        <tbody>
+                                                            <tr class="card-controls">												
+                                                                <td class="slds-text-align--left card-select-cell" width="15%">
+                                                                    <ui:inputCheckbox aura:id="cboxRow" text="{!row.Id}" class="cBoxLongList" change="{!c.changeSelectAll}"/>
+                                                                </td>
+                                                                <td width="15%">
+                                                                    <div>
+                                                                        <a target="_blank" href=""><img src="/img/social/unknown_profile_pic.png?v=2" class="card-picture"/></a>
+                                                                    </div>
+                                                                </td>
+                                                                <td class="slds-truncate row slds-text-align--left">
+                                                                    <aura:iteration items="{!v.longListfieldSetValues}" var="field">                                                                                
+                                                                        <c:LightningCell record="{!row}" field="{!field}"/><br/>
+                                                                    </aura:iteration>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </li>
+                                                <li class="card-body">
+                                                    <table class="slds-m-top--small">
+                                                        <tbody>
+                                                            <tr>
+                                                                <td class="slds-text-align--left">
+                                                                    <a data-recId="{!row.Id}" class="slds-button slds-button--neutral card-button slds-button--raised tooltip" role="button" onmouseenter="{!c.showModal}" onmouseout="{!c.hideModal}">
+                                                                        <i class="fa fa-info"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </li>
+                                                <li>                                                    	
+                                                    <div id="{!'recordDisplayDiv'+row.Id}" style="display:none;">
+                                                        <c:KanbanRecordView dataId="{!row.Id}"></c:KanbanRecordView>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>                                        
+                                    </aura:iteration>   
+                                    <aura:set attribute="else">
+                                        <div class="slds-text-align--center slds-m-top--large">
+                                            <h3 class="slds-text-heading--medium">No records found!</h3>
+                                        </div>
+                                    </aura:set>
+                                </aura:if>                                                          
+                            <!-- END Itration -->
+                            </ul>
+                        </div>
+                    </td>
+                    <!-- Start Stage Itration -->
+                    <aura:iteration var="stage" items="{!v.stages}">
+                        <td >
+                        	<div class="list-container slds-p-around--small">
+                                <ul class="jk_a list slds-scrollable--y ui-sortable">
+                                    <!-- Start Card Itration -->
+                                    <aura:iteration items="{!v.listOfApplicationRecordsByStage}" var="outside">  
+                                        <aura:if isTrue="{!outside.key == stage}"> 
+                                        <aura:if isTrue="{!outside.list.length > 0}">
+                                        <aura:iteration items="{!outside.list}" var="row">
+                                            <li  class="{!row.Reject__c == True? 'slds-item card card-state card_state_reject': 'slds-item card card-state card_state_active'}">
+                                                <ul>
+                                                    <li class="card-header card_state_false">
+                                                        <table>
+                                                            <tbody><tr class="card-controls">												
+                                                                <td>
+                                                                    <table>
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td class="slds-text-align--left card-select-cell" width="15%">                       
+                                                                                    <ui:inputCheckbox aura:id="cboxRow" text="{!row.Id}" class="{!'cBox' + stage}" name="{!stage}" change="{!c.changeSelectAll}"></ui:inputCheckbox>
+                                                                                </td>
+                                                                                <td width="15%">
+                                                                                    <div >
+                                                                                        <a target="_blank" href=""><img src="/img/social/unknown_profile_pic.png?v=2" class="card-picture"/></a>
+                                                                                    </div>
+                                                                                </td>
+                                                                                <td class="slds-truncate row slds-text-align--left">
+                                                                                    <aura:iteration items="{!v.applicationfieldSetValues}" var="field">                                                                                
+                                                                                        <c:LightningCell record="{!row}" field="{!field}"/><br/>
+                                                                                    </aura:iteration>
+                                                                                </td>
+                                                                            </tr>                                                            
+                                                                        </tbody>
+                                                                    </table>
+                                                                </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </li>
+                                                    <li class="card-body">
+                                                        <table class="slds-m-top--small">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="slds-text-align--left">
+                                                                        <a data-recId="{!row.Id}" class="slds-button slds-button--neutral card-button slds-button--raised tooltip" role="button" onmouseenter="{!c.showModal}" onmouseout="{!c.hideModal}">
+                                                                            <i class="fa fa-info"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="slds-text-align--right">                                                                            
+                                                                        <a data-recId="{!row.Id}" class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button" onclick="{!c.rejectApplication}">
+                                                                            <i class="fa fa-times" style="color: #F44336"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </li>
+                                                </ul>
+                                            </li> 
+                                            <li>                                                    	
+                                                <div id="{!'recordDisplayDiv'+row.Id}" style="display:none;">
+                                                    <c:KanbanRecordView dataId="{!row.Id}"></c:KanbanRecordView>
+                                                </div>
+                                            </li>
+                                            </aura:iteration>
+                                            <aura:set attribute="else">
+                                                <div class="slds-text-align--center slds-m-top--large">
+                                                    <h3 class="slds-text-heading--medium">No records found!</h3>
+                                                </div>
+                                            </aura:set>
+                                            </aura:if>                                            
+                                        </aura:if>
+                                    </aura:iteration>
+                                    <!-- End Card Itration -->
+                                </ul>
+                            </div>
+                        </td>
+                    </aura:iteration>
+                    <!-- End Stage Itration -->                    
+                </tr>           
+            </tbody> 
+        </table>
+    </div>
 </aura:component>

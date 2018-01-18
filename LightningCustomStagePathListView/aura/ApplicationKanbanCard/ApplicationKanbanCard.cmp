@@ -1,3 +1,240 @@
-<aura:component>
-	
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" 
+                access="global" controller="ApplicationLightningTab">
+	<ltng:require styles="{!$Resource.JobApplicationManagerCSS}" />
+	<ltng:require styles="{!$Resource.KanbanSwimlaneCSS}" />
+    <ltng:require styles="{!$Resource.FontAwesome + '/css/font-awesome.css'}"/>
+    
+    <aura:attribute name="recordId" type="Id" />
+    <aura:attribute name="stages" type="String[]"/>
+    
+    <aura:attribute name="longListsObjectName" type="String" default="Opportunity_Discussed__c"/>
+    <aura:attribute name="longListfieldSetName" type="string" default="KanbanCardLineFieldSet"/>
+    <aura:attribute name="applicationsObjectName" type="String" default="Application_V2__c"/>
+    <aura:attribute name="applicationfieldSetName" type="string" default="KanbanCardLineFieldSet"/>
+    
+    <aura:attribute name="longListfieldSetValues" type="List"/>
+    <aura:attribute name="longListtableRecords" type="List"/>
+    <aura:attribute name="applicationfieldSetValues" type="List"/>
+    <aura:attribute name="listOfApplicationRecordsByStage" type="object[]" default="[]" />
+    
+    <aura:attribute name="selectedFromLongList" type="integer" default="0"></aura:attribute>
+    <aura:attribute name="selectedFromApplication" type="integer" default="0"></aura:attribute>
+    <aura:attribute name="selectedFromApplicationByStage" type="object[]" default="[]" />
+    
+    <aura:attribute name="parentFieldName" type="string" default="Job__c"/>
+    
+    
+    <aura:attribute name="filterField" type="string"/>
+    <aura:attribute name="filterValue" type="string"/>    
+    <aura:attribute name="listHasValue" type="string" default="True"/>
+    
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:handler event="c:ApplicationMassActionEvent" action="{!c.getSelectedIds}"/>
+    <aura:handler event="c:RejectSelectedRecordsEvent" action="{!c.rejectSelectedApplication}"/>
+    
+    <div class="slds set-view slds-scrollable">		
+        <table class="slds-m-top--small kanban-board" style="table-layout: fixed; min-width: 1920px;" width="100%">
+            <thead>
+            	<tr>
+                	<th width="200px;">
+                    	<table class="chevron" cellpadding="10px">                            
+                        	<tr>
+                            	<td>
+                                	<ui:inputCheckbox aura:id="cboxLongList" class="cBox" change="{!c.selectAllLongList}"/>
+                                </td>
+                           
+                            	<td>
+                                    Long List ({!v.longListtableRecords.length})<br/>
+                                    --------------<br/>
+                                    Selections: <ui:outputText aura:id="longListCount" value="{!v.selectedFromLongList}" />
+
+                                </td>
+                            </tr>
+                        </table>
+                    </th>
+                    <aura:iteration var="stage" items="{!v.stages}">                        
+                    	<th width="200px;">
+                            <table class="chevron">                            
+                                <tr>
+                                    <td>
+                                        <ui:inputCheckbox aura:id="cbox" text="{!stage}" class="cBox" change="{!c.selectAllApplication}"/>
+                                    </td>
+                               
+                                    <td>
+                                        {!stage} 
+                                        <aura:iteration items="{!v.listOfApplicationRecordsByStage}" var="outside">
+                                            <aura:if isTrue="{!outside.key == stage}">
+                                                ({!outside.list.length})
+                                            </aura:if>
+                                        </aura:iteration>
+                                         <br/>
+                                        --------------<br/>
+                                        Selections: 
+                                        <aura:iteration items="{!v.selectedFromApplicationByStage}" var="outside">
+                                            <aura:if isTrue="{!outside.key == stage}">                                                
+                                                {!outside.count}
+                                            </aura:if>
+                                        </aura:iteration>
+                                    </td>
+                                </tr>
+                            </table>
+                        </th>
+                    </aura:iteration>                    
+                </tr>
+                <tr>
+                    <td width="200px">
+                        <aura:iteration items="{!v.longListtableRecords}" var="row">
+                        <table class="slds-m-top--small kanban-board"  width="200px">
+                            <tr>
+                                <td>
+                                    <div class="list-container slds-swimlane slds-p-around--small">
+                                        <ul>
+                                            <li  class="slds-item card card-state card_state_false">
+                                                <ul>
+                                                    <li class="card-header card_state_false">
+                                                        <table>
+                                                            <tbody>
+                                                                <tr class="card-controls">												
+                                                                    <td class="slds-text-align--left card-select-cell" width="15%">
+                                                                        <ui:inputCheckbox aura:id="cboxLonglistRow" text="{!row.Id}" class="cBox" change="{!c.changeSelectAllLongList}"/>
+                                                                    </td>
+                                                                    <td width="15%">
+                                                                        <div>
+                                                                            <a target="_blank" href=""><img src="/img/social/unknown_profile_pic.png?v=2" class="card-picture"/></a>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td class="slds-truncate row slds-text-align--left">
+                                                                        <aura:iteration items="{!v.longListfieldSetValues}" var="field">                                                                                
+                                                                            <c:LightningCell record="{!row}" field="{!field}"/><br/>
+                                                                        </aura:iteration>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </li>
+                                                    <li class="card-body">
+                                                        <table class="slds-m-top--small">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="slds-text-align--left">
+                                                                        <a class="slds-button slds-button--neutral card-button tooltip tooltipstered" role="button">
+                                                                            <i class="fa fa-info"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                    <td class="slds-text-align--right">
+                                                                        <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                            <i class="fa fa-arrow-left" style="color: #16325c"></i>
+                                                                        </a>
+                                                                        <a class="slds-button slds-button--neutral card-button card-button-hide tooltip tooltipstered" role="button">
+                                                                            <i class="fa fa-undo" style="color: #4CAF50"></i>
+                                                                        </a>
+                                                                        <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                            <i class="fa fa-clock-o" style="color: #FB5607"></i>
+                                                                        </a>
+                                                                        <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                            <i class="fa fa-times" style="color: #F44336"></i>
+                                                                        </a>
+                                                                        <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                            <i class="fa fa-arrow-right" style="color: #16325c"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                        </aura:iteration> 
+                    </td>
+                    <aura:iteration var="stage" items="{!v.stages}">
+                        <td width="200px">
+                            <aura:iteration items="{!v.listOfApplicationRecordsByStage}" var="outside">
+                                <aura:iteration items="{!outside.list}" var="row"> 
+                                <aura:if isTrue="{!outside.key == stage}">
+                                    <table class="slds-m-top--small kanban-board"  width="200px">
+                                        <tr>
+                                            <td>
+                                                <div class="list-container slds-swimlane slds-p-around--small">
+                                                    <ul>
+                                                        <li  class="slds-item card card-state card_state_false">
+                                                            <ul>
+                                                                <li class="card-header card_state_false">
+                                                                    <table>
+                                                                        <tbody><tr class="card-controls">												
+                                                                            <td>
+                                                                                <table>
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td class="slds-text-align--left card-select-cell" width="15%">                       
+                                                                                                <ui:inputCheckbox aura:id="cboxRow" text="{!row.Id}" class="cBox" name="{!stage}" change="{!c.changeSelectApplicationList}"></ui:inputCheckbox>
+                                                                                            </td>
+                                                                                            <td width="15%">
+                                                                                                <div >
+                                                                                                    <a target="_blank" href=""><img src="/img/social/unknown_profile_pic.png?v=2" class="card-picture"/></a>
+                                                                                                </div>
+                                                                                            </td>
+                                                                                            <td class="slds-truncate row slds-text-align--left">
+                                                                                                <aura:iteration items="{!v.applicationfieldSetValues}" var="field">                                                                                
+                                                                                                    <c:LightningCell record="{!row}" field="{!field}"/><br/>
+                                                                                                </aura:iteration>
+                                                                                            </td>
+                                                                                        </tr>                                                            
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                            </tr>
+                                                                        </tbody></table>
+                                                                </li>
+                                                                <li class="card-body">
+                                                                    <table class="slds-m-top--small">
+                                                                        <tbody>
+                                                                            <tr>
+                                                                                <td class="slds-text-align--left">
+                                                                                    <a class="slds-button slds-button--neutral card-button tooltip tooltipstered" role="button">
+                                                                                        <i class="fa fa-info"></i>
+                                                                                    </a>
+                                                                                </td>
+                                                                                <td class="slds-text-align--right">
+                                                                                    <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                                        <i class="fa fa-arrow-left" style="color: #16325c"></i>
+                                                                                    </a>
+                                                                                    <a class="slds-button slds-button--neutral card-button card-button-hide tooltip tooltipstered" role="button">
+                                                                                        <i class="fa fa-undo" style="color: #4CAF50"></i>
+                                                                                    </a>
+                                                                                    <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                                        <i class="fa fa-clock-o" style="color: #FB5607"></i>
+                                                                                    </a>
+                                                                                    <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                                        <i class="fa fa-times" style="color: #F44336"></i>
+                                                                                    </a>
+                                                                                    <a class="slds-button slds-button--neutral card-button card-button-show tooltip tooltipstered" role="button">
+                                                                                        <i class="fa fa-arrow-right" style="color: #16325c"></i>
+                                                                                    </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                        </tbody>
+                                                                    </table>
+                                                                </li>
+                                                            </ul>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </aura:if>   
+                                </aura:iteration>                                                                
+                            </aura:iteration>
+                        </td>
+                    </aura:iteration>
+                </tr>
+            </thead>
+        </table>
+    </div>
 </aura:component>

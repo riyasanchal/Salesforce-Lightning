@@ -1,0 +1,7 @@
+<aura:component >
+	<aura:attribute name="nameSpace" type="String" />
+    <aura:attribute name="label" type="String"/>
+    <aura:attribute name="labelText" type="String"/>
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    {!v.labelText}
+</aura:component>

@@ -1,9 +1,10 @@
 <aura:component implements="flexipage:availableForAllPageTypes,force:hasRecordId" 
                 access="global" 
                 controller="ApplicationLightningTab">
-    
+    <ltng:require styles="{!$Resource.FontAwesome + '/css/font-awesome.css'}"/>
     <!-- Event Handling -->
     <aura:registerEvent name="applicationMassAction" type="c:ApplicationMassActionEvent"/>
+    <aura:registerEvent name="rejectSelectedRecords" type="c:RejectSelectedRecordsEvent"/>
     
     <!-- Design attributes -->
     <aura:attribute name="FieldSet" type="string" default="Lightning_List_Tab" required="true"/>
@@ -11,18 +12,19 @@
     <!-- Component Attributes -->
     <aura:attribute name="stages" type="String[]"/>
     <aura:attribute name="isKanban" type="Boolean" default="false"/>
+    <aura:attribute name="recordId" type="Id" />
     <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
     <div class="slds-grid slds-grid_align-spread slds-m-bottom_medium slds-m-top_medium">
       <div class="slds-text-heading_medium">
       		<h2>Applications</h2>
       </div>
-        <div>
+        <div class="slds-grid slds-grid_align-spread">
             
             <div class="slds-dropdown-trigger mass-action">                
-              <button class="slds-button slds-button_icon slds-button_icon-border-filled" title="Mass Action" onclick="{!c.showActions}">
-                  Mass Action
+              <button class="slds-button slds-button_icon slds-button_icon-border-filled" title="Move To Stage" onclick="{!c.showActions}">
+                  Move To Stage
                   <lightning:icon iconName="utility:down" size="xx-small" alternativeText=""/>
-                <span class="slds-assistive-text">Mass Action</span>
+                <span class="slds-assistive-text">Move To Stage</span>
               </button>
               <div aura:id="mActionMenu" class="slds-dropdown slds-dropdown_right  slds-hide">
                 <ul  class="slds-dropdown__list" role="menu">
@@ -37,6 +39,12 @@
               </div>
             </div>
             
+            <div class="slds-m-right_medium slds-m-left_xx-small">
+                <button class="slds-button slds-button--neutral tooltip tooltipstered"  title="Reject Selected" onclick="{!c.rejectSelected}">
+                      <i aria-hidden="true" class="fa fa-user-times"></i>
+                  </button>
+            </div>
+            
              <div class="slds-dropdown-trigger"  >
                  <a class="slds-button slds-button_neutral switchButton"  href="javascript:void(0)" onclick="{!c.changeView}">
                      <span class="switchIcon"></span>
@@ -49,14 +57,15 @@
                  </a>
               </div> 
          </div>
+        
       </div>
     
     <aura:if isTrue="{!v.isKanban}">
           	<div class="slds-box">
-                <c:ApplicationKanbanView />
+                <c:ApplicationKanbanView recordId="{!v.recordId}"/>
             </div> 
           <aura:set attribute="else">
-              <c:ApplicationListViewTab recordId="a0x1I000000SlZdQAK"/>
+              <c:ApplicationListViewTab recordId="{!v.recordId}"/>
           </aura:set>
         </aura:if>
 </aura:component>

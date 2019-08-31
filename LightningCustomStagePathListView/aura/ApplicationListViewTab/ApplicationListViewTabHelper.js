@@ -121,12 +121,58 @@
         
     	// get server side method
         if(selctedRec == ''){
-            alert('Please select atleast one record.');
+            component.set("v.isError", 'true');
+            helper.doInit(component, event, helper);            
             return;
         }
         var action = component.get("c.updateApplicationStatus"); 
     	action.setParams({
             strStage: selectedStage,
+            setApplicationIds: selctedRec           
+        });
+        // set the callback function        
+        action.setCallback(this, function(response) {
+            var state =   response.getState();
+            if(state === "SUCCESS"){
+                helper.doInit(component, event, helper);
+            }else if (state === "INCOMPLETE") {
+                // do something
+            }
+            else if (state === "ERROR") {
+                var errors = response.getError();
+                if (errors) {
+                    if (errors[0] && errors[0].message) {
+                        console.log("Error message: " +errors[0].message);
+                    }
+                } else {
+                    console.log("Unknown error");
+                }
+            }
+        });
+        // execute server side action
+        $A.enqueueAction(action);   
+    },
+    
+    rejectSelectedApplication: function(component, event, helper) {
+        var getCheckAllId = component.find("cboxRow");
+        var selctedRec = '';
+        for (var i = 0; i < getCheckAllId.length; i++) {             
+            if(getCheckAllId[i].get("v.value") == true ){
+    			if(selctedRec == ''){
+                	selctedRec = getCheckAllId[i].get("v.text");
+				}else{
+ 					selctedRec = selctedRec +','+ getCheckAllId[i].get("v.text");
+ 				}
+            }
+        }
+    	// get server side method
+        if(selctedRec == ''){
+            component.set("v.isError", 'true');
+            helper.doInit(component, event, helper);            
+            return;
+        }
+        var action = component.get("c.rejectSelected"); 
+    	action.setParams({
             setApplicationIds: selctedRec           
         });
         // set the callback function        

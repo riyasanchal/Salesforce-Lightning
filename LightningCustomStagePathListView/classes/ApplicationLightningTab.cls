@@ -24,6 +24,7 @@ public class ApplicationLightningTab {
             result += e.getLineNumber() + ' : ' + e.getMessage();
             return null;
         }
+        system.debug('************** result == '+result);
         return '['+result+']';
     }
     
@@ -34,13 +35,23 @@ public class ApplicationLightningTab {
         try{
             List<String> fieldNames = (List<String>) JSON.deserialize(fieldNameJson, List<String>.class);
             Set<String> setFieldNames = new Set<String>();
-            String query = 'SELECT Id, Rejected_Stage__c, ' + String.join(fieldNames, ',') + ' FROM ' + sObjectName;
+            string strFieldsetFields = String.join(fieldNames, ',');
+            String query = 'SELECT Id, ' + String.join(fieldNames, ',') ;
+            if(sObjectName == 'Application_V2__c'){
+                query += ' ,Reject__c ';
+                if(! strFieldsetFields.contains('Stage__c')){
+                	query += ' ,Stage__c ';
+                }
+            }
+            
+            query += ' FROM ' + sObjectName;
             if(parentFieldName != NULL && parentFieldName != '' && parentRecordId != NULL){
                 query += ' WHERE ' + parentFieldName + '= \'' +  parentRecordId + '\'';
             }
             if(filterField != null && filterField != '' && filterValue != null && filterValue != ''){
             	query += ' AND ' + filterField + '= \'' +  filterValue + '\'';
             }
+            system.debug('************** query == '+query);
             for(sObject s : Database.query(query)){
                 lstResult.add(s);
             }
@@ -57,7 +68,7 @@ public class ApplicationLightningTab {
     @AuraEnabled
     public static String[] getApplicationStageValues(){
         List<String> options = new List<String>();
-        Schema.DescribeFieldResult fieldResult = V2_Application__c.Stage__c.getDescribe();
+        Schema.DescribeFieldResult fieldResult = Application_V2__c.Stage__c.getDescribe();
         List<Schema.PicklistEntry> ple = fieldResult.getPicklistValues();
         for( Schema.PicklistEntry f : fieldResult.getPicklistValues()){ 
           options.add(f.getLabel());
@@ -70,9 +81,9 @@ public class ApplicationLightningTab {
         if(setApplicationIds != null && setApplicationIds != ''){
             list<string> lstAllPllicationIds = setApplicationIds.split(',');
             if(lstAllPllicationIds.size() > 0){
-                List<V2_Application__c> lstApplications = new List<V2_Application__c>();
+                List<Application_V2__c> lstApplications = new List<Application_V2__c>();
                 for(string strAppId: lstAllPllicationIds){  
-                    V2_Application__c app = new V2_Application__c();
+                    Application_V2__c app = new Application_V2__c();
                     app.Id = strAppId;
                     app.Stage__c = strStage;    
 					lstApplications.add(app);                    
@@ -80,14 +91,67 @@ public class ApplicationLightningTab {
                 update lstApplications;
             }
         }        
-    }    
+    }  
     
-    public static string getLongList(string jobId){
-        string strResult = '';
-        List<Opportunity_Discussed__c> lstLongList = [Select Id, Candidate__c, Candidate__r.Name, Candidate__r.Phone, Candidate__r.Email from Opportunity_Discussed__c where Job__c =: jobId];
-        if(lstLongList.size() > 0) {
-            strResult = JSON.serialize(lstLongList);
+    @AuraEnabled
+    public static void kanbanMassAction(string strStage, string setApplicationIds, string setLongListIds){
+        system.debug('********* strStage == '+strStage);
+        system.debug('********* setApplicationIds == '+setApplicationIds);
+        system.debug('********* setLongListIds == '+setLongListIds);    
+        if(setLongListIds != '' && setLongListIds != null){
+            list<string> lstLongListIds = setLongListIds.split(',');
+            if(lstLongListIds.size() > 0){
+                
+                List<Opportunity_Discussed__c> lstLongList = new List<Opportunity_Discussed__c>();
+                for(string strLongListId: lstLongListIds){  
+                    Opportunity_Discussed__c objLongList = new Opportunity_Discussed__c();
+                    objLongList.Id = strLongListId;
+                    objLongList.Status__c = 'Converted';    
+					lstLongList.add(objLongList);                    
+                }                    
+                update lstLongList;
+                lstLongList = [Select Id, Candidate__c, Job__c from Opportunity_Discussed__c where Id IN:lstLongListIds];
+                List<Application_V2__c> lstApplicationsToCreate = new List<Application_V2__c>();
+                for(Opportunity_Discussed__c objLongList: lstLongList){
+                    Application_V2__c newApplication = new Application_V2__c();
+                    newApplication.Opportunity_Discussed__c = objLongList.Id;
+                    newApplication.Applicant__c = objLongList.Candidate__c;
+                    newApplication.Job__c = objLongList.Job__c;
+                    newApplication.Stage__c = strStage;
+                    lstApplicationsToCreate.add(newApplication);
+                }
+                insert lstApplicationsToCreate;
+            }
+            
         }
-        return strResult;
+        
+        if(setApplicationIds != null && setApplicationIds != ''){
+            list<string> lstAllPllicationIds = setApplicationIds.split(',');
+            if(lstAllPllicationIds.size() > 0){
+                List<Application_V2__c> lstApplications = new List<Application_V2__c>();
+                for(string strAppId: lstAllPllicationIds){  
+                    Application_V2__c app = new Application_V2__c();
+                    app.Id = strAppId;
+                    app.Stage__c = strStage;    
+					lstApplications.add(app);                    
+                }                    
+                update lstApplications;
+            }
+        }
+    }
+    
+    @AuraEnabled
+    public static void rejectSelected(string setApplicationIds){
+        if(setApplicationIds != null && setApplicationIds != ''){
+            list<string> lstAllPllicationIds = setApplicationIds.split(',');
+            List<Application_V2__c> lstApplications = new List<Application_V2__c>();
+            for(string strId : lstAllPllicationIds){
+                Application_V2__c app = new Application_V2__c();
+                app.Id = strId;
+                app.reject__c = true;    
+                lstApplications.add(app);   
+        	}  
+            update lstApplications;
+    	}
     }
 }

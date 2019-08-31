@@ -2,7 +2,7 @@
                 access="global" 
                 controller="ApplicationLightningTab">
     
-    <aura:attribute name="sObjectName" type="String" default="V2_Application__c"/>
+    <aura:attribute name="sObjectName" type="String" default="Application_V2__c"/>
     <aura:attribute name="fieldSetName" type="string" default="Lightning_List_Tab"/>
     <aura:attribute name="fieldSetValues" type="List"/>
     <aura:attribute name="tableRecords" type="List"/>
@@ -15,9 +15,18 @@
     <aura:attribute name="filterField" type="string"/>
     <aura:attribute name="filterValue" type="string"/>    
     <aura:attribute name="listHasValue" type="string" default="True"/>
+    <aura:attribute name="isError" type="string" default="false"/>  
     
-    <aura:handler event="c:ApplicationMassActionEvent" action="{!c.getAllApplicationId}"/>    
+    <aura:handler event="c:ApplicationMassActionEvent" action="{!c.getAllApplicationId}"/> 
+    <aura:handler event="c:RejectSelectedRecordsEvent" action="{!c.rejectSelectedApplication}"/>
+    
     <aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+    
+    <aura:If isTrue="{!isError == 'true'}">
+        <ui:message title="Error" severity="error" closable="true">
+           Please select atleast one application for Mass Action.
+         </ui:message>
+    </aura:If>
     
     <div class="slds set-view slds-scrollable">		
         <table class="slds-table slds-table--bordered" width="100%">
@@ -44,9 +53,6 @@
                             </th>
                         </aura:if>
                     </aura:iteration>
-                    <th class="slds-text-title_caps" width="20%">
-                    	Action
-                    </th>
                 </tr>
             </thead>
         	<tbody>				
@@ -61,14 +67,11 @@
                                     <aura:if isTrue="{!field.name != 'Stage__c'}">
                                         <c:LightningCell record="{!row}" field="{!field}"/>
                                     </aura:if>
-                                    <aura:if isTrue="{!field.name == 'Stage__c'}">                                    
-                                        <c:ApplicationStageProgress stages="{!v.stages}" currentStage="{!row.Stage__c}" rejectedStage="{!row.Rejected_Stage__c}"/>
+                                    <aura:if isTrue="{!field.name == 'Stage__c'}">      
+                                        <c:ApplicationStageProgress stages="{!v.stages}" currentStage="{!row.Stage__c}" rejectedStage="{!if(row.Reject__c == true, row.Stage__c, '')}"/>
                                     </aura:if>
                                 </td>
                             </aura:iteration>
-                            <td width="20%">
-                                
-                            </td>
                         </tr>
                     </aura:iteration>                    
                 </aura:if>

@@ -15,6 +15,6 @@
             }
         });
         // execute server side action
-        $A.enqueueAction(action);   
+        $A.enqueueAction(action); 
     },
 })

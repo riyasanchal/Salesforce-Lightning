@@ -7,3 +7,7 @@
 .THIS .slds-is-lost + .slds-is-incomplete::before {
  	background-color: rgb(194, 57, 52);
 }
+.THIS .chavaron .slds-tabs--path__item {
+    min-width: 3rem !important;    
+	max-width: 4rem !important;
+}

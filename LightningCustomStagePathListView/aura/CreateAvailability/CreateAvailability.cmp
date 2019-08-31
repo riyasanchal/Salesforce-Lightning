@@ -1,0 +1,18 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,flexipage:availableForRecordHome,force:hasRecordId,forceCommunity:availableForAllPageTypes,force:lightningQuickAction" access="global" controller="TRS_CandidateCalendarCtlr">
+<aura:handler name="init" value="{!this}" action="{!c.doInit}"/>
+
+<aura:attribute name="selectedDate" type="Date"/>	
+<aura:attribute name="isDateRange" type="Boolean" default="false"/>
+<aura:attribute name="TypeOptions" type="String[]" />
+<aura:attribute name="TimeOptions" type="String[]" />
+<aura:attribute name="shiftOptions" type="String[]" />
+<aura:attribute name="noOfRowsSingleDay" type="Integer"/>
+<aura:attribute name="PeriodBasedShift" type="Boolean"/>	
+    
+<aura:attribute name="singleDaySlotList" Type="TRS_CandidateCalendarCtlr.singleDaySlot[]"/>    
+<aura:attribute name="singleDaySlot" Type="String"/> 
+<aura:attribute name="timeslotWrapperList" Type="TRS_CandidateCalendarCtlr.timeslotWrapperList[]"/>    
+<aura:attribute name="timeslotWrapper" Type="String"/> 
+    
+    
+</aura:component>

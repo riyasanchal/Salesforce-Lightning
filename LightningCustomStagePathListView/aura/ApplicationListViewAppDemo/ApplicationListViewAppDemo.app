@@ -1,3 +1,3 @@
 <aura:application extends="force:slds">
-    <c:ApplicationCustomTab />
+    <c:ApplicationKanbanView recordId="a0x1I000000SlZdQAK"/>
 </aura:application>
